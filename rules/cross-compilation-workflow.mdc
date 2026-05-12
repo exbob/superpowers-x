@@ -1,0 +1,48 @@
+---
+description: Cross-compilation workflow — host produces artifacts for a different execution environment than the build machine; Tier A/B verification; never run target-built binaries on the host without explicit emulation.
+alwaysApply: true
+---
+
+# Cross-Compilation Workflow
+
+**Scope:** Any project where **build outputs are not meant to run on the machine where the compiler runs** (different CPU, OS, ABI, or runtime from the developer shell). Examples include embedded boards, cross-built services for another architecture, firmware or game targets, or any documented host/target split.
+
+## Host vs target
+
+- **Host (develop/build machine):** Edit source, invoke the toolchain (including cross compilers), package artifacts. Often the same environment as the IDE or agent (e.g. Linux x86_64).
+- **Target:** Where the artifact is installed and executed. Tier B validation happens here unless the user states otherwise.
+
+## Hard rule — do not run target-built binaries on the host
+
+Unless your human partner **explicitly** requests `qemu-user`, `qemu-system`, `wine`, or another documented emulation path, you **must not** execute programs, shared libraries, or images **built for the target** on the host to fake runtime proof. Typical failures (wrong machine type, `Exec format error` on ELF systems, etc.) must not trigger retry loops.
+
+When runtime verification is needed, default to:
+
+1. The project’s **cross-build** command(s) and expected artifacts on the host.
+2. **Deploy/run** steps on the **target** (paths, services, permissions).
+3. **Success signals** on the target (logs, health checks, observable behavior — use project or **`build-variants-and-logging`** expectations when naming levels).
+4. Ask the human partner to run on the target and **paste logs or output**; continue from that evidence.
+
+## Verification tiers
+
+**Tier A (agent on host, when applicable)**
+
+- Cross-compile and link succeed (exit 0; expected artifacts for the intended target).
+- Optional static checks the project uses (`clang-format`, `clang-tidy`, linters, etc.).
+- **Host-runnable** automated tests only when the repo provides tests that actually execute **on the build host** and cover portable logic — they do **not** replace behavior that depends on the target stack (drivers, OS services, hardware, production-like config).
+
+**Tier B (human on target, default for full stack validation)**
+
+- Install or copy artifacts, start the process or service, observe behavior on the **target**.
+- Collect **target-side** output (logs, console, probes) per the spec or project policy.
+- The agent must **not** claim target runtime results without evidence supplied in the conversation.
+
+User instructions override this rule when they clearly ask for host-side emulation or a native host build-and-run workflow.
+
+## Iteration rhythm
+
+Prefer **small increments:** implement one slice → cross-build on the host → human verifies on the **target** → next slice. Plans and handoffs should name toolchain or cross-build commands, artifact paths, target deploy steps, and how the partner confirms success (behavior and/or log patterns).
+
+## Native-only work
+
+If the human partner states the project **builds and runs on the same machine as the agent** (no separate target for execution), follow that scope and normal host-run verification applies. User instructions take precedence over this rule.

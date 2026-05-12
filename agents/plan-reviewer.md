@@ -18,6 +18,7 @@ You are a plan document reviewer. Verify this plan is complete and ready for imp
 | Spec Alignment | Plan covers spec requirements, no major scope creep |
 | Task Decomposition | Tasks have clear boundaries, steps are actionable |
 | Buildability | Could an engineer follow this plan without getting stuck? |
+| Cross-compile / target | For cross-compiled work: cross-build commands, artifact paths, and **target** deploy + log-based acceptance are explicit — not “run `./app` on the dev machine” unless that binary is truly host-native |
 
 ## Calibration
 

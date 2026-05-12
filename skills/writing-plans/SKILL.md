@@ -119,6 +119,16 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
 
+## Cross-compilation plans
+
+When the work uses a **cross toolchain** (artifacts run somewhere other than the agent’s build host), each plan should make verification explicit:
+
+- **Cross-build:** Exact command(s), toolchain or preset name, and expected artifact paths on the host.
+- **Target:** How to deploy or install, how to start the binary or service.
+- **Acceptance on target:** Observable behavior plus concrete log lines (e.g. key **INFO** or **DEBUG** messages), not an implicit “run the shipped binary on the developer machine” when that binary is target-only.
+
+Avoid steps that only say “run the program to verify” without stating **where** (host vs target) and **how** the human partner confirms success.
+
 ## Self-Review
 
 After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.

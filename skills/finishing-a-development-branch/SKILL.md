@@ -17,25 +17,27 @@ Guide completion of development work by presenting clear options and handling ch
 
 ### Step 1: Verify Tests
 
-**Before presenting options, verify tests pass:**
+**Before presenting options, confirm all required host-side verification for this repo has passed** (test suite, documented cross-build, or both—whichever the project actually uses).
+
+If the project is **cross-compiled** (artifacts run on a different machine than the build host), verify with the project’s documented **cross-build** on the host until it succeeds. Do **not** run target-built binaries on the host as “tests.” Optionally run any **host-native** automated tests the repo defines, after a successful cross-build. Skip the generic test command below if it does not apply to this repo.
 
 ```bash
 # Run project's test suite
 npm test / cargo test / pytest / go test ./...
 ```
 
-**If tests fail:**
+**If verification fails** (test suite failures, cross-build or link failure, or other required host-side checks):
 ```
-Tests failing (<N> failures). Must fix before completing:
+Verification failed. Must fix before completing:
 
-[Show failures]
+[Show failures — test output, cross-build stderr, or both]
 
-Cannot proceed with merge/PR until tests pass.
+Cannot proceed with merge/PR until host-side verification passes.
 ```
 
 Stop. Don't proceed to Step 2.
 
-**If tests pass:** Continue to Step 2.
+**If verification passes:** Continue to Step 2.
 
 ### Step 2: Detect Environment
 

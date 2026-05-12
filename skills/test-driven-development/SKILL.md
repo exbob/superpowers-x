@@ -28,6 +28,21 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
 
+## Cross-compilation and target-bound code
+
+When artifacts are built for a **different execution environment** than the agent’s shell, the host cross-builds and the **target** runs the full application or service. Do **not** treat “run the shipped binary in the agent shell on the build host” as the default TDD or verification loop for that code.
+
+**What still fits TDD**
+
+- Portable logic (pure functions, parsers, state machines) with **host-runnable** automated tests: keep RED → GREEN → REFACTOR on the host.
+- Commands like `npm test` or `pytest` in this skill mean: run whatever **automated test command actually executes on the current host** for this repository — not “run the cross-built product on the host” unless it is genuinely host-native.
+
+**What does not**
+
+- Behavior that depends on the target stack (drivers, hardware, OS services, production topology): the closed loop is **host-side proof where possible** (cross-build, unit tests) plus **explicit, repeatable steps on the target** for the human partner to run and report back (logs, traces, dumps **on the target** — not forced full reproduction by running target binaries on the host).
+
+If the plan or partner supplies only target-side acceptance, document those steps in the plan; do not substitute by executing target-built binaries on the host.
+
 ## The Iron Law
 
 ```
@@ -336,6 +351,7 @@ Before marking work complete:
 - [ ] Output pristine (no errors, warnings)
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
+- [ ] If target-bound or cross-compiled: **Cross-compilation and target-bound code** applies to this checklist
 
 Can't check all boxes? You skipped TDD. Start over.
 
@@ -368,4 +384,4 @@ Production code → test exists and failed first
 Otherwise → not TDD
 ```
 
-No exceptions without your human partner's permission.
+No exceptions without your human partner's permission. Target-bound or cross-compiled: interpret "test" and "failed first" per **Cross-compilation and target-bound code** above.

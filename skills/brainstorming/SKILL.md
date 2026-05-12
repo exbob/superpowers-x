@@ -72,6 +72,7 @@ digraph brainstorming {
 - Check out the current project state first (files, docs, recent commits)
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
+- Build vs runtime: If the idea involves firmware, embedded targets, another OS/architecture, or “we compile on X and run on Y,” establish before deep feature questions whether deliverables are native build-and-run on one machine or cross-compilation with a separate execution target. Cross-compiled work must later produce a spec with host/target environments, cross-build commands, and deploy/install — asking early keeps success criteria and testing questions aligned. Still obey one question per message when you ask.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
@@ -110,6 +111,11 @@ digraph brainstorming {
 
 - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
+- When the work is cross-compiled (artifacts run somewhere other than the agent’s build host), the spec must declare: 
+  - **build host** environment (OS, arch)
+  - **target** environment (OS, arch)
+  - **build commands** (exact lines or authoritative build targets in-repo)
+  - **deploy/install** on the target (transfer, install paths, permissions, how to start or enable the component). 
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 
@@ -120,6 +126,7 @@ After writing the spec document, look at it with fresh eyes:
 2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
 3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
 4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
+5. **Cross-compile completeness (when applicable):** If the design has a host/target split, does the spec document host and target environments, cross-build commands, and deploy/install on the target? If not, add a dedicated subsection before committing.
 
 Fix any issues inline. No need to re-review — just fix and move on.
 
