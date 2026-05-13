@@ -63,6 +63,8 @@ You MUST complete each phase before proceeding to the next.
    - Does it happen every time?
    - If not reproducible → gather more data, don't guess
 
+   **Host vs target (cross-compilation):** Compiler and linker failures belong on the **host** (reproduce with the same cross-build command). Crashes or behavior that only appear on the **target** stack (drivers, hardware, OS services, production config) need evidence from the **target** (app logs, traces, core dumps there). Do not demand full reproduction by running target-built binaries on the host; ask your human partner for target-side captures when needed.
+
 3. **Check Recent Changes**
    - What changed that could cause this?
    - Git diff, recent commits

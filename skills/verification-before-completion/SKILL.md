@@ -44,6 +44,7 @@ Skip any step = lying, not verifying
 | Tests pass | Test command output: 0 failures | Previous run, "should pass" |
 | Linter clean | Linter output: 0 errors | Partial check, extrapolation |
 | Build succeeds | Build command: exit 0 | Linter passing, logs look good |
+| Cross-build succeeds (cross-compiled project) | Cross-compile command: exit 0, expected artifacts on host | Running target-built binary on host, "should work on target" |
 | Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
 | Regression test works | Red-green cycle verified | Test passes once |
 | Agent completed | VCS diff shows changes | Agent reports "success" |
@@ -104,6 +105,28 @@ Skip any step = lying, not verifying
 ✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
 ❌ Trust agent report
 ```
+
+## Cross-compilation
+
+The iron law still applies: **no success claims without fresh evidence in this turn.** Evidence must match what is actually verifiable on the host vs the target.
+
+**Allowed after you run the proof command and show output**
+
+- **Host-side:** Cross-compile or static checks succeeded (full command output, exit 0, expected artifacts).
+- **Host-runnable tests:** Automated tests that truly run on the host for this repo (e.g. portable unit tests), with the same evidence bar as above.
+
+**Not allowed**
+
+- Claiming the application **runs correctly on the target** or **meets target runtime acceptance** without logs or a clear conclusion **from the human partner** (pasted output, explicit confirmation).
+- Trying to satisfy “run it” by **repeatedly executing target-built binaries on the host** (e.g. `Exec format error` loops on Unix). Stop; give cross-build + deploy + expected target logs instead.
+
+**Rationalization to reject**
+
+| Excuse | Reality |
+|--------|---------|
+| "I'll run the binary to verify" on host for a cross-built target | Wrong machine; use Tier A on host, Tier B on target |
+| "Tests would pass on target" | Not evidence until the partner supplies target results or host-side tests actually ran |
+| "It should work on the target" | RUN cross-build on host; target behavior needs partner evidence |
 
 ## Why This Matters
 

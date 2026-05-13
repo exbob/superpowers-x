@@ -13,7 +13,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
+**Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
 
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
@@ -118,6 +118,16 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
+
+## Cross-compilation plans
+
+When the work uses a **cross toolchain** (artifacts run somewhere other than the agent’s build host), each plan should make verification explicit:
+
+- **Cross-build:** Exact command(s), toolchain or preset name, and expected artifact paths on the host.
+- **Target:** How to deploy or install, how to start the binary or service.
+- **Acceptance on target:** Observable behavior plus concrete log lines (e.g. key **INFO** or **DEBUG** messages), not an implicit “run the shipped binary on the developer machine” when that binary is target-only.
+
+Avoid steps that only say “run the program to verify” without stating **where** (host vs target) and **how** the human partner confirms success.
 
 ## Self-Review
 
