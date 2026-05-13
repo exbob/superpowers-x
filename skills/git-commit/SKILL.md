@@ -22,7 +22,7 @@ description: Use this skill to standardize Git commit messages with Conventional
 ```
 
 约束：
-- `type` 必须从下面的 “Type 选择规则” 中选择。
+- `type` 必须从下面的 “Type 选择规则” 中选择；其中「快速 Type 选择」在适用时优先于上表的一般语义。
 - `scope` 建议提供；当改动范围不明确或非常小，可省略为 `<type>: <subject>`。
 - `subject` 使用祈使语气，不加句号，建议不超过 50 字符。可使用中文或英文。
 - `body` 解释“为什么改”，而不是重复“改了什么”。如果内容较多，可以分成多行，或者用空行分隔不同段落。可使用中文或英文。
@@ -44,9 +44,20 @@ description: Use this skill to standardize Git commit messages with Conventional
 | `chore` | Maintenance tasks | `chore(deps): update dependencies` |
 | `revert` | Revert previous commit | `revert: revert "feat(auth): add OAuth2 login"` |
 
+### 快速 Type 选择
+
+在判断 `type` 时，下列规则**优先于**上表的一般语义：
+
+| 条件 | 必须使用 `type` |
+|------|-----------------|
+| 变更文件**仅**位于 `docs/` 目录下（含子目录） | `docs` |
+| 变更文件**仅**位于 `.cursor/` 目录下（含子目录） | `chore` |
+| 变更文件**仅**位于 `.github/` 目录下（含子目录） | `ci` |
+| 变更文件**仅**位于 `.vscode/` 目录下（含子目录） | `chore` |
+
 ## 生成提交信息时的工作流
 
-1. 先判断变更类型，选择最贴近目的的 `type`（避免泛化成 `chore`）。
+1. 先对照「快速 Type 选择」与 staged 路径；再判断其余变更类型，选择最贴近目的的 `type`（避免泛化成 `chore`）。
 2. 提炼变更边界，给出简洁 `scope`（如 `api`、`ui`、`db`、`auth`）。
 3. 写出可读的 `subject`（祈使语气 + 明确动作）。
 4. 如有必要补充 `body`（背景、原因、权衡）。
