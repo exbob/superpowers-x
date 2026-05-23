@@ -53,13 +53,13 @@ target_include_directories(${PROGRAM_NAME}
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/config"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/log"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/app"
-	"${CJSON_SOURCE_SUBDIR}"
+	"${TOMLC17_SOURCE_SUBDIR}/src"
 	"${ZLOG_SOURCE_SUBDIR}/src"
 )
 
 target_link_libraries(${PROGRAM_NAME}
 	PRIVATE
-	cjson
+	tomlc17
 	zlog_s
 	pthread
 )
@@ -86,9 +86,9 @@ install(TARGETS ${PROGRAM_NAME}
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	install(FILES
-		"${CMAKE_CURRENT_SOURCE_DIR}/configs/app.debug.json"
+		"${CMAKE_CURRENT_SOURCE_DIR}/configs/app.debug.toml"
 		DESTINATION "."
-		RENAME "app.json"
+		RENAME "app.toml"
 	)
 	install(FILES
 		"${CMAKE_CURRENT_SOURCE_DIR}/configs/zlog.debug.ini"
@@ -97,9 +97,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	)
 else()
 	install(FILES
-		"${CMAKE_CURRENT_SOURCE_DIR}/configs/app.release.json"
+		"${CMAKE_CURRENT_SOURCE_DIR}/configs/app.release.toml"
 		DESTINATION "."
-		RENAME "app.json"
+		RENAME "app.toml"
 	)
 	install(FILES
 		"${CMAKE_CURRENT_SOURCE_DIR}/configs/zlog.release.ini"

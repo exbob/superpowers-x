@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include <cJSON.h>
+#include <tomlc17.h>
 
 #include <limits.h>
 #include <stdint.h>
@@ -84,65 +84,57 @@ static char *read_all(FILE *fp, int *too_large)
 	return buf;
 }
 
-static int has_only_known_members(cJSON *obj, const char *const *keys, size_t key_count)
+static int is_known_root_key(const char *key)
 {
-	cJSON *item;
-	size_t i;
-	int found;
+	return strcmp(key, "interval_seconds") == 0 ||
+	       strcmp(key, "zlog_config_path") == 0;
+}
 
-	cJSON_ArrayForEach(item, obj) {
-		if (!item->string) {
-			return 0;
-		}
-		found = 0;
-		for (i = 0; i < key_count; ++i) {
-			if (strcmp(item->string, keys[i]) == 0) {
-				found = 1;
-				break;
-			}
-		}
-		if (!found) {
+static int has_only_known_members(toml_datum_t root)
+{
+	int i;
+
+	if (root.type != TOML_TABLE) {
+		return 0;
+	}
+	for (i = 0; i < root.u.tab.size; ++i) {
+		if (!is_known_root_key(root.u.tab.key[i])) {
 			return 0;
 		}
 	}
 	return 1;
 }
 
-static int parse_interval_seconds(cJSON *root, unsigned int *out_interval)
+static int parse_interval_seconds(toml_datum_t root, unsigned int *out_interval)
 {
-	cJSON *interval_item;
-	double interval_double;
-	unsigned long interval_sec;
+	toml_datum_t interval_item;
+	int64_t interval_value;
 
-	interval_item = cJSON_GetObjectItemCaseSensitive(root, "interval_seconds");
-	if (!cJSON_IsNumber(interval_item)) {
+	interval_item = toml_get(root, "interval_seconds");
+	if (interval_item.type != TOML_INT64) {
 		return CONFIG_ERR_SCHEMA;
 	}
 
-	interval_double = cJSON_GetNumberValue(interval_item);
-	if (interval_double < 1.0) {
-		return CONFIG_ERR_SCHEMA;
-	}
-	interval_sec = (unsigned long)interval_double;
-	if ((double)interval_sec != interval_double || interval_sec > (unsigned long)UINT_MAX) {
+	interval_value = interval_item.u.int64;
+	if (interval_value < 1 || interval_value > (int64_t)UINT_MAX) {
 		return CONFIG_ERR_SCHEMA;
 	}
 
-	*out_interval = (unsigned int)interval_sec;
+	*out_interval = (unsigned int)interval_value;
 	return CONFIG_OK;
 }
 
-static int parse_zlog_config_path(cJSON *root, char **out_path_copy)
+static int parse_zlog_config_path(toml_datum_t root, char **out_path_copy)
 {
-	cJSON *path_item;
+	toml_datum_t path_item;
 	const char *path_text;
 	char *path_copy;
 
-	path_item = cJSON_GetObjectItemCaseSensitive(root, "zlog_config_path");
-	if (!cJSON_IsString(path_item)) {
+	path_item = toml_get(root, "zlog_config_path");
+	if (path_item.type != TOML_STRING) {
 		return CONFIG_ERR_SCHEMA;
 	}
-	path_text = cJSON_GetStringValue(path_item);
+	path_text = path_item.u.s;
 	if (!path_text || strlen(path_text) == 0) {
 		return CONFIG_ERR_SCHEMA;
 	}
@@ -156,40 +148,42 @@ static int parse_zlog_config_path(cJSON *root, char **out_path_copy)
 	return CONFIG_OK;
 }
 
-static int parse_json_config(struct json_config *cfg, const char *json_text)
+static int parse_toml_config(struct app_config *cfg, const char *toml_text)
 {
-	static const char *const root_keys[] = {"interval_seconds", "zlog_config_path"};
-	cJSON *root;
+	toml_result_t result;
+	toml_datum_t root;
 	unsigned int interval_seconds = 0;
 	char *zlog_config_path = NULL;
 	int ret;
 
-	root = cJSON_Parse(json_text);
-	if (!root) {
+	result = toml_parse(toml_text, (int)strlen(toml_text));
+	if (!result.ok) {
+		toml_free(result);
 		return CONFIG_ERR_PARSE;
 	}
 
-	if (!cJSON_IsObject(root) || !has_only_known_members(root, root_keys, 2)) {
-		cJSON_Delete(root);
+	root = result.toptab;
+	if (root.type != TOML_TABLE || !has_only_known_members(root)) {
+		toml_free(result);
 		return CONFIG_ERR_SCHEMA;
 	}
 
 	ret = parse_interval_seconds(root, &interval_seconds);
 	if (ret != CONFIG_OK) {
-		cJSON_Delete(root);
+		toml_free(result);
 		return ret;
 	}
 
 	ret = parse_zlog_config_path(root, &zlog_config_path);
 	if (ret != CONFIG_OK) {
-		cJSON_Delete(root);
+		toml_free(result);
 		return ret;
 	}
 
 	cfg->interval_seconds = interval_seconds;
 	cfg->zlog_config_path = zlog_config_path;
 
-	cJSON_Delete(root);
+	toml_free(result);
 	return CONFIG_OK;
 }
 
@@ -205,7 +199,7 @@ static struct config_load_result config_error_result(int error_code)
 struct config_load_result config_load_file(const char *path)
 {
 	FILE *fp;
-	char *json_text;
+	char *toml_text;
 	int too_large = 0;
 	struct config_load_result result = config_error_result(0);
 
@@ -217,27 +211,27 @@ struct config_load_result config_load_file(const char *path)
 	if (!fp) {
 		return config_error_result(CONFIG_ERR_IO);
 	}
-	json_text = read_all(fp, &too_large);
+	toml_text = read_all(fp, &too_large);
 	fclose(fp);
-	if (!json_text) {
+	if (!toml_text) {
 		if (too_large) {
 			return config_error_result(CONFIG_ERR_TOO_LARGE);
 		}
 		return config_error_result(CONFIG_ERR_IO);
 	}
 
-	result.error_code = parse_json_config(&result.config, json_text);
+	result.error_code = parse_toml_config(&result.config, toml_text);
 	if (result.error_code != CONFIG_OK) {
-		free(json_text);
+		free(toml_text);
 		config_free(&result.config);
 		return result;
 	}
 
-	free(json_text);
+	free(toml_text);
 	return result;
 }
 
-void config_free(struct json_config *cfg)
+void config_free(struct app_config *cfg)
 {
 	if (!cfg) {
 		return;

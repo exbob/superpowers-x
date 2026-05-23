@@ -2,7 +2,7 @@
 
 一个 Linux C11 示例工程，使用 CMake 构建，提供：
 
-- JSON 主配置加载（间隔秒数 + zlog 配置路径）
+- TOML 主配置加载（间隔秒数 + zlog 配置路径）
 - 独立 zlog `.ini` 配置（完全 zlog 原生格式）
 - 定时日志输出与 `Ctrl+C` 退出
 - `--help` / `--version` / `-f` 命令行参数
@@ -16,11 +16,11 @@ ARCH=x86_64 ./build.sh debug
 # 进入 deploy 目录
 cd ./deploy
 
-# 运行（默认读取 ../app.json）
+# 运行（默认读取 ./app.toml）
 ./complex-app
 
 # 显式指定配置文件
-./complex-app -f ./app.json
+./complex-app -f ./app.toml
 
 # 查看帮助与版本
 ./complex-app --help
@@ -39,8 +39,8 @@ cd ./deploy
 ├── git-version.sh
 ├── cmake/
 ├── configs/
-│   ├── app.debug.json
-│   ├── app.release.json
+│   ├── app.debug.toml
+│   ├── app.release.toml
 │   ├── zlog.debug.ini
 │   └── zlog.release.ini
 ├── src/
@@ -70,7 +70,7 @@ cd ./deploy
 
 第三方依赖由 CMake 自动拉取：
 
-- cJSON `1.7.18`
+- tomlc17 `R260517`
 - zlog `1.2.18`
 
 首次构建需要联网。
@@ -97,23 +97,21 @@ cd ./deploy
 
 | 选项 | 行为 |
 |------|------|
-| `-f <path>` / `--config <path>` | 指定 JSON 主配置文件 |
+| `-f <path>` / `--config <path>` | 指定 TOML 主配置文件 |
 | `-h` / `--help` | 打印帮助 |
 | `-v` / `--version` | 打印版本与构建时间 |
 
-默认配置文件路径是当前目录 `app.json`。
+默认配置文件路径是当前目录 `app.toml`。
 
 ## 配置文件说明
 
-### 1) 主配置（JSON）
+### 1) 主配置（TOML）
 
 主配置只包含两个选项：
 
-```json
-{
-	"interval_seconds": 5,
-	"zlog_config_path": "./zlog.ini"
-}
+```toml
+interval_seconds = 5
+zlog_config_path = "./zlog.ini"
 ```
 
 - `interval_seconds`：循环间隔（秒），必须为正整数

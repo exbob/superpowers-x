@@ -30,7 +30,7 @@ static void on_sigint(int signum)
 	g_stop = 1;
 }
 
-void app_run(const struct json_config *cfg)
+void app_run(const struct app_config *cfg)
 {
 	struct sigaction sa;
 	struct sigaction old_int;

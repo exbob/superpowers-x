@@ -18,7 +18,7 @@ static void print_help(const char *prog)
 	printf("Usage: %s [OPTION]\n", prog);
 	printf("A Linux C complex-app demo application.\n\n");
 	printf("Options:\n");
-	printf("  -f, --config   Load JSON config from file\n");
+	printf("  -f, --config   Load TOML config from file\n");
 	printf("  -h, --help     Show this help message\n");
 	printf("  -v, --version  Show program version information\n");
 }
@@ -39,7 +39,7 @@ static const char *config_error_to_string(int error_code)
 	case CONFIG_ERR_IO:
 		return "io error";
 	case CONFIG_ERR_PARSE:
-		return "json parse error";
+		return "toml parse error";
 	case CONFIG_ERR_OOM:
 		return "out of memory";
 	case CONFIG_ERR_SCHEMA:
@@ -66,7 +66,7 @@ static const char *log_error_to_string(int error_code)
 int main(int argc, char *argv[])
 {
 	struct config_load_result load_result;
-	const char *config_path = "app.json";
+	const char *config_path = "app.toml";
 	int c;
 	int log_ret;
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 	// Load configuration file
 	load_result = config_load_file(config_path);
 	if (load_result.error_code != CONFIG_OK) {
-		fprintf(stderr, "failed to load json config: %s (%s)\n",
+		fprintf(stderr, "failed to load toml config: %s (%s)\n",
 			config_path, config_error_to_string(load_result.error_code));
 		return load_result.error_code;
 	}

@@ -3,6 +3,6 @@
 
 #include "config.h"
 
-void app_run(const struct json_config *cfg);
+void app_run(const struct app_config *cfg);
 
 #endif /* _APP_H */

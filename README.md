@@ -115,7 +115,7 @@ Cursor **会话启动**钩子，安装后配置在 `.cursor/hooks.json`，可执
 - `git-tag`：发版/打标签、SemVer（含 `v` 前缀）、标注/轻量标签、推送与删除标签等
 - `bash-scripting`：编写、编辑、审查或重构 Bash/Shell 脚本及 CI 中的 shell 步骤
 - `writing-linux-c-small-app`：Linux 用户态 C 小型工具/CLI（CMake、命令行驱动、无大配置文件、stdout 式日志）
-- `writing-linux-c-complex-app`：Linux 用户态 C 复杂应用（CMake、JSON 主配置、zlog、模块化等，含交叉编译场景检查）
+- `writing-linux-c-complex-app`：Linux 用户态 C 复杂应用（CMake、TOML 主配置、zlog、模块化等，含交叉编译场景检查）
 
 ### agents
 

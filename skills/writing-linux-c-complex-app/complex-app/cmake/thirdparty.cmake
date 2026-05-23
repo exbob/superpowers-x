@@ -5,45 +5,35 @@ cmake_policy(SET CMP0135 NEW)
 set(_OLD_CMAKE_WARN_DEPRECATED "${CMAKE_WARN_DEPRECATED}")
 set(CMAKE_WARN_DEPRECATED OFF)
 
-# ===== cJSON module =====
-# set upstream version and integrity metadata.
-set(CJSON_VERSION "1.7.18")
-set(CJSON_TARBALL_URL "https://github.com/DaveGamble/cJSON/archive/refs/tags/v${CJSON_VERSION}.tar.gz")
-set(CJSON_TARBALL_SHA256 "3aa806844a03442c00769b83e99970be70fbef03735ff898f4811dd03b9f5ee5")
-set(CJSON_FETCH_ROOT "${CMAKE_SOURCE_DIR}/thirdpart/json")
+# ===== tomlc17 module =====
+set(TOMLC17_VERSION "R260517")
+set(TOMLC17_TARBALL_URL "https://github.com/cktan/tomlc17/archive/refs/tags/${TOMLC17_VERSION}.tar.gz")
+set(TOMLC17_TARBALL_SHA256 "b8489dc181e606983307523f8bc3a188e7d59fe6b8eb7e85a406cfebe7f2ec92")
+set(TOMLC17_FETCH_ROOT "${CMAKE_SOURCE_DIR}/thirdpart/tomlc17")
 
-# Declare source fetch without automatic add_subdirectory.
-FetchContent_Declare(cjson_upstream
-	URL "${CJSON_TARBALL_URL}"
-	URL_HASH SHA256=${CJSON_TARBALL_SHA256}
+FetchContent_Declare(tomlc17_upstream
+	URL "${TOMLC17_TARBALL_URL}"
+	URL_HASH SHA256=${TOMLC17_TARBALL_SHA256}
 	DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-	SOURCE_DIR "${CJSON_FETCH_ROOT}"
+	SOURCE_DIR "${TOMLC17_FETCH_ROOT}"
 )
 
-# Download/extract only when not already populated.
-FetchContent_GetProperties(cjson_upstream)
-if(NOT cjson_upstream_POPULATED)
-	FetchContent_Populate(cjson_upstream)
+FetchContent_GetProperties(tomlc17_upstream)
+if(NOT tomlc17_upstream_POPULATED)
+	FetchContent_Populate(tomlc17_upstream)
 endif()
 
-# Prefer GitHub archive top directory; fallback to SOURCE_DIR root if needed.
-set(CJSON_SOURCE_SUBDIR "${CJSON_FETCH_ROOT}/cJSON-${CJSON_VERSION}")
-if(NOT EXISTS "${CJSON_SOURCE_SUBDIR}/CMakeLists.txt" AND EXISTS "${CJSON_FETCH_ROOT}/CMakeLists.txt")
-	set(CJSON_SOURCE_SUBDIR "${CJSON_FETCH_ROOT}")
+set(TOMLC17_SOURCE_SUBDIR "${TOMLC17_FETCH_ROOT}/tomlc17-${TOMLC17_VERSION}")
+if(NOT EXISTS "${TOMLC17_SOURCE_SUBDIR}/src/tomlc17.c" AND EXISTS "${TOMLC17_FETCH_ROOT}/src/tomlc17.c")
+	set(TOMLC17_SOURCE_SUBDIR "${TOMLC17_FETCH_ROOT}")
 endif()
 
-# Fail fast when source layout is unexpected.
-if(NOT EXISTS "${CJSON_SOURCE_SUBDIR}/CMakeLists.txt")
-	message(FATAL_ERROR "cJSON source not found at ${CJSON_SOURCE_SUBDIR} (clear thirdpart/json and reconfigure)")
+if(NOT EXISTS "${TOMLC17_SOURCE_SUBDIR}/src/tomlc17.c")
+	message(FATAL_ERROR "tomlc17 source not found at ${TOMLC17_SOURCE_SUBDIR} (clear thirdpart/tomlc17 and reconfigure)")
 endif()
 
-# Build cJSON as static and disable extra test/compiler flags.
-set(ENABLE_CJSON_TEST OFF CACHE BOOL "" FORCE)
-set(ENABLE_CUSTOM_COMPILER_FLAGS OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-
-# Exclude third-party target from default all target.
-add_subdirectory("${CJSON_SOURCE_SUBDIR}" "${CMAKE_BINARY_DIR}/thirdpart/cjson-build" EXCLUDE_FROM_ALL)
+add_library(tomlc17 STATIC "${TOMLC17_SOURCE_SUBDIR}/src/tomlc17.c")
+target_include_directories(tomlc17 PUBLIC "${TOMLC17_SOURCE_SUBDIR}/src")
 
 # ===== zlog module =====
 # set upstream version and integrity metadata.
